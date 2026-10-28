@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="WolfSecurity detects phishing links with machine learning and blacklist checks." />
+  <title>WolfSecurity | Phishing URL Detector</title>
+  <link rel="stylesheet" href="/app-assets/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-wrap">
+      <div class="brand-mark" aria-label="WolfSecurity wolf logo">
+        <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+          <path class="wolf-head" d="M11 8 25 15 32 11 39 15 53 8 51 25 59 32 49 47 43 42 39 55 32 60 25 55 21 42 15 47 5 32 13 25z" />
+          <path class="wolf-detail" d="m18 19 10 5-4 5-7-2zm28 0-10 5 4 5 7-2zM23 35l9 5 9-5-4 11-5 4-5-4z" />
+          <path class="wolf-eye" d="m22 30 7 2-6 3zm20 0-7 2 6 3z" />
+        </svg>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">WolfSecurity</span>
+        <span class="brand-tag">Cyber Defense</span>
+      </div>
+    </div>
+
+    <nav class="main-nav" aria-label="Main navigation">
+      <a href="#features">Features</a>
+      <a href="#workflow">Workflow</a>
+      <a href="#analyzer">Analyzer</a>
+      <a href="#about">About</a>
+    </nav>
+
+    <a class="nav-cta" href="#analyzer">Analyze URL</a>
+  </header>
+
+  <main class="page-wrap">
+    <section class="hero">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">CYBER DEFENSE PLATFORM</p>
+          <h1>Detect phishing links before they reach your users.</h1>
+          <p class="hero-sub">
+            Real-time threat detection powered by a dual machine-learning engine that flags suspicious URLs,
+            checks known malicious domains, and explains the risk in plain language.
+          </p>
+
+          <div class="hero-actions">
+            <a class="primary-btn" href="#analyzer">Try the analyzer</a>
+            <a class="secondary-btn" href="#workflow">See how it works</a>
+          </div>
+
+          <div class="hero-stats">
+            <div class="stat-box">
+              <strong>2</strong>
+              <span>ML models</span>
+            </div>
+            <div class="stat-box">
+              <strong>100%</strong>
+              <span>Blacklist flagging</span>
+            </div>
+            <div class="stat-box">
+              <strong>Live</strong>
+              <span>Risk scoring</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-panel">
+          <div class="analyzer-card" id="analyzer">
+            <div class="analyzer-heading">
+              <span class="live-indicator" aria-hidden="true"></span>
+              <span>LIVE URL CHECKER</span>
+            </div>
+            <label class="analyzer-label" for="urlInput">Check a link before you open it</label>
+            <p class="analyzer-intro">Paste a URL or domain. Your results include a risk score and the signals behind it.</p>
+            <div class="input-row">
+              <textarea id="urlInput" rows="3" aria-label="URLs to analyze"
+                        placeholder="Paste a URL or one URL per line"
+                        autocomplete="off" spellcheck="false"></textarea>
+              <button id="analyzeBtn" type="button" onclick="analyzeUrl()">
+                <span id="btnText">Check link</span>
+                <span id="btnSpinner" class="spinner hidden"></span>
+              </button>
+            </div>
+            <div class="file-input-actions">
+              <button id="chooseFilesBtn" class="file-select-btn" type="button">Choose URL files</button>
+              <button id="chooseFolderBtn" class="file-select-btn" type="button">Choose folder</button>
+              <span id="fileStatus" class="file-input-status" aria-live="polite"></span>
+              <input id="urlFiles" type="file" accept=".txt,.csv,.json,.log,.md" multiple hidden />
+              <input id="urlFolderFiles" type="file" accept=".txt,.csv,.json,.log,.md" webkitdirectory directory multiple hidden />
+            </div>
+            <p class="input-hint">Up to 1,000 links per check. Files are read in your browser; extracted URLs are sent to this server for analysis.</p>
+            <p id="analysisStatus" class="analysis-status" role="status" aria-live="polite"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="analyzer" class="analyzer-section">
+      <div class="section-header compact">
+        <p class="section-kicker">ANALYSIS</p>
+        <h2 class="section-title">See what the models found.</h2>
+      </div>
+
+      <div class="analyzer-card results-card">
+        <div id="batchPanel" class="batch-panel hidden" aria-live="polite">
+          <h3 id="batchHeading">Batch results</h3>
+          <div class="table-scroll">
+            <table class="results-table">
+              <thead><tr><th>URL</th><th>Verdict</th><th>Risk</th><th>Logistic Regression</th><th>Random Forest</th><th>Why?</th></tr></thead>
+              <tbody id="batchResults"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="resultPanel" class="result-panel hidden">
+          <div id="verdictBadge" class="verdict-badge">
+            <span id="verdictIcon"></span>
+            <span id="verdictText"></span>
+          </div>
+
+          <div class="score-section">
+            <div class="score-label">
+              <span>Combined Risk Score</span>
+              <strong id="combinedPct">—</strong>
+            </div>
+            <div class="bar-track">
+              <div id="combinedBar" class="bar-fill combined"></div>
+            </div>
+          </div>
+
+          <div class="models-grid">
+            <div class="model-card" id="lrCard">
+              <div class="model-header">
+                <span class="model-icon">📈</span>
+                <span class="model-name">Logistic Regression</span>
+                <span id="lrVerdict" class="model-verdict-badge"></span>
+              </div>
+              <div class="score-label">
+                <span>LR Risk Score</span>
+                <strong id="lrPct">—</strong>
+              </div>
+              <div class="bar-track">
+                <div id="lrBar" class="bar-fill lr"></div>
+              </div>
+              <p id="lrDesc" class="model-desc">A linear probability model — fast, interpretable, and great at spotting clear structural patterns.</p>
+              <div class="model-reasons">
+                <h5>Why LR flagged this:</h5>
+                <ul id="lrReasons"></ul>
+              </div>
+            </div>
+
+            <div class="model-card" id="rfCard">
+              <div class="model-header">
+                <span class="model-icon">🌲</span>
+                <span class="model-name">Random Forest</span>
+                <span id="rfVerdict" class="model-verdict-badge"></span>
+              </div>
+              <div class="score-label">
+                <span>RF Risk Score</span>
+                <strong id="rfPct">—</strong>
+              </div>
+              <div class="bar-track">
+                <div id="rfBar" class="bar-fill rf"></div>
+              </div>
+              <p id="rfDesc" class="model-desc">An ensemble of decision trees — captures non-linear feature interactions and subtle phishing patterns.</p>
+              <div class="model-reasons">
+                <h5>Why RF flagged this:</h5>
+                <ul id="rfReasons"></ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="reasons-section">
+            <h4>Detection Insights</h4>
+            <ul id="reasonsList"></ul>
+          </div>
+        </div>
+        <p id="emptyResults" class="empty-results">Your analysis will appear here.</p>
+      </div>
+
+      <section class="metrics-section" aria-labelledby="metricsTitle">
+        <div class="metrics-heading">
+          <div>
+            <p class="section-kicker">MODEL EVALUATION</p>
+            <h3 id="metricsTitle">Logistic Regression vs Random Forest</h3>
+          </div>
+          <span id="metricsMethod" class="metrics-method">Loading evaluation…</span>
+        </div>
+        <div class="table-scroll">
+          <table class="results-table metrics-table">
+            <thead><tr><th>Model</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1-Score</th></tr></thead>
+            <tbody id="metricsBody"></tbody>
+          </table>
+        </div>
+        <p id="metricsNote" class="metrics-note"></p>
+      </section>
+    </section>
+
+    <section id="features" class="awareness-banner">
+      <div class="section-header">
+        <p class="section-kicker">WHY IT MATTERS</p>
+        <h2 class="section-title">Cyber awareness starts with smarter detection.</h2>
+      </div>
+
+      <div class="awareness-grid">
+        <div class="tip-card">
+          <span class="tip-icon">🔗</span>
+          <h3>Suspicious URLs</h3>
+          <p>Phishing links often mimic real brands with small changes: <em>paypa1.com</em>, <em>amazon-secure-login.net</em>. Always inspect the full domain before clicking.</p>
+        </div>
+        <div class="tip-card">
+          <span class="tip-icon">📧</span>
+          <h3>Urgent Email Requests</h3>
+          <p>Attackers create fake urgency — "Your account will be suspended!" Legitimate companies never demand immediate action via email links.</p>
+        </div>
+        <div class="tip-card">
+          <span class="tip-icon">🔒</span>
+          <h3>HTTPS Is Not Enough</h3>
+          <p>A padlock icon only means the connection is encrypted, NOT that the site is trustworthy. Phishing sites use HTTPS too.</p>
+        </div>
+        <div class="tip-card">
+          <span class="tip-icon">📡</span>
+          <h3>IP Address in URL</h3>
+          <p>URLs like <em>http://192.168.1.1/login</em> are a red flag. Real websites use domain names, not raw IP addresses.</p>
+        </div>
+        <div class="tip-card">
+          <span class="tip-icon">@</span>
+          <h3>The "@" Trick</h3>
+          <p>A URL containing "@" redirects you to the part after it. <em>http://safe.com@evil.com</em> actually takes you to <em>evil.com</em>.</p>
+        </div>
+        <div class="tip-card">
+          <span class="tip-icon">🧠</span>
+          <h3>Think Before You Click</h3>
+          <p>When in doubt, navigate directly to the official website by typing the address yourself — never follow links in unsolicited messages.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="workflow" class="workflow-section">
+      <div class="section-header compact">
+        <p class="section-kicker">WORKFLOW</p>
+        <h2 class="section-title">How the detection engine works.</h2>
+      </div>
+
+      <div class="workflow">
+        <div class="wf-step">
+          <div class="wf-circle">1</div>
+          <div class="wf-label">URL Input</div>
+          <div class="wf-desc">User enters any URL or domain</div>
+        </div>
+        <div class="wf-arrow">→</div>
+
+        <div class="wf-step">
+          <div class="wf-circle">2</div>
+          <div class="wf-label">Normalize</div>
+          <div class="wf-desc">Strip whitespace, add protocol if missing</div>
+        </div>
+        <div class="wf-arrow">→</div>
+
+        <div class="wf-step wf-branch">
+          <div class="wf-circle warn">3</div>
+          <div class="wf-label">Blacklist Check</div>
+          <div class="wf-desc">Instant 100% phishing if domain is known-bad</div>
+        </div>
+        <div class="wf-arrow">→</div>
+
+        <div class="wf-step">
+          <div class="wf-circle">4</div>
+          <div class="wf-label">Feature Extraction</div>
+          <div class="wf-desc">URL length, hyphens, dots, IP flag, @ symbol…</div>
+        </div>
+        <div class="wf-arrow">→</div>
+
+        <div class="wf-step dual">
+          <div class="wf-circle model">5a</div>
+          <div class="wf-label">Logistic Regression</div>
+          <div class="wf-desc">Calculates LR risk %</div>
+        </div>
+        <div class="wf-plus">+</div>
+        <div class="wf-step dual">
+          <div class="wf-circle model">5b</div>
+          <div class="wf-label">Random Forest</div>
+          <div class="wf-desc">Calculates RF risk %</div>
+        </div>
+        <div class="wf-arrow">→</div>
+
+        <div class="wf-step">
+          <div class="wf-circle">6</div>
+          <div class="wf-label">Aggregate Score</div>
+          <div class="wf-desc">Average of both model probabilities</div>
+        </div>
+        <div class="wf-arrow">→</div>
+
+        <div class="wf-step result">
+          <div class="wf-circle res">7</div>
+          <div class="wf-label">Verdict</div>
+          <div class="wf-desc">SAFE · SUSPICIOUS · PHISHING</div>
+        </div>
+      </div>
+      <p class="wf-note">* If a domain is found in the blacklist at step 3, steps 4–6 are skipped and PHISHING is returned immediately.</p>
+    </section>
+
+  </main>
+
+  <footer id="about" class="site-footer">
+    <p>WolfSecurity &nbsp;|&nbsp; Dual ML Engine &nbsp;|&nbsp; For educational &amp; research use only</p>
+    <p class="footer-note">This tool does not replace professional cybersecurity advice. Always verify links through official channels.</p>
+  </footer>
+
+  <script src="/app-assets/app.js"></script>
+</body>
+</html>
