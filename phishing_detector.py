@@ -437,10 +437,16 @@ def index():
 @app.route("/app-assets/<path:filename>")
 def serve_app_asset(filename):
     if filename == "app.js":
-        return send_from_directory(os.path.dirname(__file__), filename)
+        return send_from_directory(
+            os.path.join(os.path.dirname(__file__), "static"),
+            filename
+        )
     if filename not in {"analyzer.css", "style.css"}:
         return "Not found", 404
-    return send_from_directory(os.path.join(os.path.dirname(__file__), "static"), filename)
+    return send_from_directory(
+        os.path.join(os.path.dirname(__file__), "static"),
+        filename
+    )
 
 
 @app.route("/pdf")
